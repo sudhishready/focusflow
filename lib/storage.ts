@@ -1,6 +1,7 @@
 export type Task = {
   id: string
   title: string
+  category: string
   done: boolean
   createdAt: number
 }
@@ -17,6 +18,8 @@ export type Settings = {
   breakMinutes: number
   longBreakMinutes: number
   sessionsBeforeLongBreak: number
+  theme: "light" | "dark"
+  soundOn: boolean
 }
 
 const TASKS_KEY = "focusflow_tasks"
@@ -28,6 +31,8 @@ export const defaultSettings: Settings = {
   breakMinutes: 5,
   longBreakMinutes: 15,
   sessionsBeforeLongBreak: 4,
+  theme: "light",
+  soundOn: true,
 }
 
 export function loadTasks(): Task[] {
@@ -58,4 +63,18 @@ export function loadSettings(): Settings {
 
 export function saveSettings(settings: Settings) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+}
+
+export function getStreak(sessions: Session[]): number {
+  if (sessions.length === 0) return 0
+  const days = new Set(
+    sessions.map((s) => new Date(s.completedAt).toDateString())
+  )
+  let streak = 0
+  let cursor = new Date()
+  while (days.has(cursor.toDateString())) {
+    streak++
+    cursor.setDate(cursor.getDate() - 1)
+  }
+  return streak
 }

@@ -11,6 +11,7 @@ type TaskListProps = {
 export default function TaskList({ activeTaskId, onSelectTask }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [newTaskTitle, setNewTaskTitle] = useState("")
+  const [newTaskCategory, setNewTaskCategory] = useState("General")
 
   useEffect(() => {
     setTasks(loadTasks())
@@ -22,6 +23,7 @@ export default function TaskList({ activeTaskId, onSelectTask }: TaskListProps) 
       id: crypto.randomUUID(),
       title: newTaskTitle.trim(),
       done: false,
+        category: newTaskCategory,
       createdAt: Date.now(),
     }
     const updated = [...tasks, task]
@@ -54,6 +56,16 @@ export default function TaskList({ activeTaskId, onSelectTask }: TaskListProps) 
           placeholder="What are you working on?"
           className="flex-1 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white placeholder-slate-500"
         />
+      <select
+        value={newTaskCategory}
+        onChange={(e) => setNewTaskCategory(e.target.value)}
+        className="rounded-lg border border-slate-700 bg-slate-800 text-sm px-2"
+      >
+          <option>General</option>
+          <option>Work</option>
+          <option>Study</option>
+          <option>Personal</option>
+      </select>
         <button
           onClick={addTask}
           className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
@@ -86,6 +98,6 @@ export default function TaskList({ activeTaskId, onSelectTask }: TaskListProps) 
           </li>
         ))}
       </ul>
-    </div>
+      </div>
   )
 }
