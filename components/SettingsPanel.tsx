@@ -15,7 +15,7 @@ export default function SettingsPanel({ onSave }: SettingsPanelProps) {
     setSettings(loadSettings())
   }, [])
 
-  function handleChange(key: keyof Settings, value: number) {
+  function handleChange(key: keyof Settings, value: number | boolean | string) {
     setSettings((s) => ({ ...s, [key]: value }))
   }
 
@@ -73,6 +73,13 @@ export default function SettingsPanel({ onSave }: SettingsPanelProps) {
           onChange={(e) => handleChange("sessionsBeforeLongBreak", Number(e.target.value))}
           className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white"
         />
+      </label>
+      <label className="flex items-center gap-2 text-sm text-slate-300">
+          <input type="checkbox"
+          checked={settings.soundOn}
+          onChange={(e) => handleChange("soundOn", e.target.checked)}
+              />
+            Sound when a session ends
       </label>
       <div className="flex gap-3">
         <button onClick={handleSave} className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600">

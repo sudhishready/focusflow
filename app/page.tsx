@@ -5,6 +5,8 @@ import Timer from "@/components/Timer"
 import TaskList from "@/components/TaskList"
 import Stats from "@/components/Stats"
 import SettingsPanel from "@/components/SettingsPanel"
+import History from "@/components/History"
+import ThemeToggle from "@/components/ThemeToggle"
 import { loadTasks } from "@/lib/storage"
 
 export default function Home() {
@@ -30,6 +32,7 @@ export default function Home() {
           <h1 className="text-3xl font-bold">FocusFlow</h1>
           <SettingsPanel onSave={() => setRefreshKey((k) => k + 1)}
           />
+      <ThemeToggle />
         </div>
         <Timer
           key={refreshKey}
@@ -42,6 +45,7 @@ export default function Home() {
           activeTaskId={activeTaskId}
           onSelectTask={handleSelectTask}
         />
+      <History />
       </div>
     </main>
   )

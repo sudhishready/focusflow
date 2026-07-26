@@ -18,6 +18,12 @@ export default function Timer({ activeTaskId, activeTaskTitle, onSessionComplete
   const [running, setRunning] = useState(false)
   const [completedFocusCount, setCompletedFocusCount] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+    
+  useEffect(() => {
+      if (typeof Notification !== "undefined") {
+      Notification.requestPermission()
+    }
+  }, [])
 
   useEffect(() => {
     setSettings(loadSettings())
@@ -38,8 +44,27 @@ export default function Timer({ activeTaskId, activeTaskTitle, onSessionComplete
     handleModeSwitch()
   }, [secondsLeft])
 
-  function handleModeSwitch() {
+  function playBeep() {
+  if (!settings.soundOn) return
+  const ctx = new AudioContext()
+  const osc = ctx.createOscillator()
+  const gain = ctx.createGain()
+  osc.connect(gain)
+  gain.connect(ctx.destination)
+  osc.frequency.value = 880
+  gain.gain.value = 0.1
+  osc.start()
+  osc.stop(ctx.currentTime + 0.2)
+}
+
+  function notify(msg: string) {
+  if (typeof Notification === "undefined") return
+  new Notification(msg)
+  }
+    function handleModeSwitch() {
     setRunning(false)
+    playBeep()
+    notify("Session done, nice work")
     if (mode === "focus") {
       const sessions = loadSessions()
       const session: Session = {
@@ -69,6 +94,16 @@ export default function Timer({ activeTaskId, activeTaskTitle, onSessionComplete
     setRunning((r) => !r)
   }
 
+  useEffect(() => {
+      function onKey(e: KeyboardEvent) {
+      if (e.code === "Space") {
+          toggleRunning()
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+    }, [])
+
   function resetTimer() {
     setRunning(false)
     setMode("focus")
@@ -78,6 +113,8 @@ export default function Timer({ activeTaskId, activeTaskTitle, onSessionComplete
   const minutes = Math.floor(secondsLeft / 60)
   const seconds = secondsLeft % 60
   const display = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+  const totalSeconds = mode === "focus" ? settings.focusMinutes * 60 : mode === "break" ? settings.breakMinutes * 60 : settings.longBreakMinutes * 60
+  const progress = 1 - secondsLeft / totalSeconds
 
   return (
     <div className="flex flex-col items-center gap-6 rounded-2xl border border-slate-800 bg-slate-900 p-8">
@@ -87,7 +124,13 @@ export default function Timer({ activeTaskId, activeTaskTitle, onSessionComplete
       {activeTaskTitle && (
         <span className="text-sm text-slate-500">Working on: {activeTaskTitle}</span>
       )}
-      <span className="text-7xl font-bold tabular-nums text-white">{display}</span>
+      <div className="relative w-56 h-56 flex items-center justify-center">
+          <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" stroke="#334155" strokeWidth="6" fill="none" />
+          <circle cx="50" cy="50" r="45" stroke="#f97316" strokeWidth="6" fill="none" strokeDasharray={`${2 * Math.PI * 45}`} strokeDashoffset={`${2 * Math.PI * 45 * (1 - progress)}`} strokeLinecap="round" />
+        </svg>
+      <span className="text-5xl font-bold tabular-nums text-white">{display}</span>
+      </div>
       <div className="flex gap-3">
         <button
           onClick={toggleRunning}
